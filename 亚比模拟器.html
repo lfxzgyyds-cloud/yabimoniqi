@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>PIXEL SELF · 坏掉的掌机生命记录器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+@font-face{
+  font-family:'Zpix';
+  src:url('https://cdn.jsdelivr.net/gh/SolidZORO/zpix-pixel-font@latest/dist/Zpix.woff2') format('woff2');
+  font-display:swap;
+}
+/* ============ DESIGN TOKENS ============ */
+:root{
+  --bg:#07060f;
+  --bg-2:#0d0221;
+  --panel:#150a30;
+  --panel-2:#1d1142;
+  --panel-line:#3a2a6b;
+  --silver:#cfcad8;
+  --silver-dim:#7a7591;
+  --silver-dark:#3c3656;
+
+  --neon-purple:#b14aed;
+  --neon-green:#39ff14;
+  --neon-cyan:#00f0ff;
+  --neon-pink:#ff2e97;
+  --neon-yellow:#ffd23f;
+  --neon-orange:#ff8a00;
+
+  --hp:#ff3864;
+  --san:#5b8cff;
+  --hype:#ffd23f;
+  --chaos:#ff2e97;
+  --clean:#00f0ff;
+  --money:#39ff14;
+  --awake:#ff8a00;
+  --hunger:#ffae42;
+  --social:#c08bff;
+  --control:#7df9ff;
+
+  --win-a:#2a1a6e;
+  --win-b:#6a3ad6;
+  --win-text:#e8e3ff;
+
+  --px:'Zpix','Press Start 2P',monospace;
+  --pixel-num:'Press Start 2P','Zpix',monospace;
+  --mono:'VT323','Zpix',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--px);
+  background:
+    radial-gradient(120% 80% at 50% -10%, #1a0b3a 0%, transparent 60%),
+    radial-gradient(100% 60% at 50% 120%, #2a0b2e 0%, transparent 55%),
+    var(--bg);
+  color:var(--silver);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100%;
+  padding:18px;
+  overflow-x:hidden;
+}
+/* ambient floating pixels */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, rgba(177,74,237,.5), transparent),
+    radial-gradient(2px 2px at 80% 20%, rgba(0,240,255,.4), transparent),
+    radial-gradient(2px 2px at 65% 75%, rgba(255,46,151,.4), transparent),
+    radial-gradient(2px 2px at 35% 85%, rgba(57,255,20,.35), transparent);
+  background-repeat:no-repeat;
+  opacity:.6;
+}
+
+/* ============ DEVICE FRAME ============ */
+.device{
+  position:relative;z-index:1;
+  width:min(430px,100%);
+  height:min(880px,94vh);
+  background:linear-gradient(180deg,#1a1030,#0c0720);
+  border:3px solid #000;
+  border-radius:26px;
+  box-shadow:
+    0 0 0 2px #2a1a55,
+    0 0 0 5px #000,
+    0 30px 70px rgba(0,0,0,.7),
+    0 0 60px rgba(177,74,237,.25);
+  padding:10px;
+  display:flex;flex-direction:column;
+}
+.screen{
+  position:relative;flex:1;
+  background:linear-gradient(180deg,#0a0718 0%,#0b0420 100%);
+  border:2px solid #000;
+  border-radius:16px;
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+/* CRT scanlines + vignette */
+.screen::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:25;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 2px, transparent 2px 4px),
+    radial-gradient(120% 120% at 50% 50%, transparent 60%, rgba(0,0,0,.55) 100%);
+  mix-blend-mode:multiply;
+}
+.screen::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:24;
+  background:linear-gradient(90deg, rgba(255,46,151,.04), rgba(0,240,255,.04));
+}
+
+/* ============ WINDOW CHROME (win98 style) ============ */
+.win{
+  background:var(--panel);
+  border:2px solid #000;
+  box-shadow:inset 0 0 0 2px var(--panel-line);
+  image-rendering:pixelated;
+}
+.win-title{
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,var(--win-b),var(--win-a));
+  color:var(--win-text);
+  font-family:var(--pixel-num);
+  font-size:9px;letter-spacing:.5px;
+  padding:6px 8px;
+  border-bottom:2px solid #000;
+  text-shadow:1px 1px 0 #000;
+}
+.win-title .dots{display:flex;gap:4px}
+.win-title .dot{cursor:pointer;width:14px;height:14px;background:var(--hp);border:1px solid #000;box-shadow:inset -1px -1px 0 rgba(0,0,0,.4);position:relative;display:inline-flex;align-items:center;justify-content:center}
+.win-title .dot::before,.win-title .dot::after{content:'';position:absolute;width:8px;height:2px;background:#1a0008}
+.win-title .dot::before{transform:rotate(45deg)}
+.win-title .dot::after{transform:rotate(-45deg)}
+.win-title .dot:hover{background:#ff5c78}
+.win-body{padding:10px}
+
+/* ============ TOP BAR ============ */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;font-family:var(--pixel-num);font-size:9px;
+  color:var(--neon-cyan);
+  border-bottom:2px solid var(--panel-line);
+  background:linear-gradient(180deg,#120a2c,#0c0622);
+  text-shadow:0 0 6px rgba(0,240,255,.5);
+}
+.topbar .batt{display:flex;align-items:center;gap:5px;color:var(--neon-green)}
+.batt .cell{width:22px;height:10px;border:1px solid var(--neon-green);position:relative}
+.batt .cell::after{content:'';position:absolute;right:-3px;top:2px;width:2px;height:6px;background:var(--neon-green)}
+.batt .cell::before{content:'';position:absolute;left:1px;top:1px;bottom:1px;width:13px;background:var(--neon-green);box-shadow:0 0 6px var(--neon-green)}
+
+/* ============ PAGES ============ */
+.stage{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:thin;scrollbar-color:var(--panel-line) transparent}
+.stage::-webkit-scrollbar{width:6px}
+.stage::-webkit-scrollbar-thumb{background:var(--panel-line)}
+.page{display:none;padding:14px 14px 24px;min-height:100%}
+.page.active{display:block;animation:pagein .25s steps(3)}
+@keyframes pagein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ============ HOME ============ */
+.home-day{font-family:var(--pixel-num);font-size:11px;color:var(--neon-yellow);text-shadow:0 0 8px rgba(255,210,63,.5);margin-bottom:2px}
+.home-status{font-size:13px;color:var(--neon-pink);margin-bottom:14px;line-height:1.4;text-shadow:0 0 6px rgba(255,46,151,.4)}
+
+.char-stage{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;
+  padding:8px 0 4px;
+}
+.char-wrap{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center}
+.char-svg{width:160px;height:160px;image-rendering:pixelated;transition:transform .2s}
+.char-svg.shake{animation:shake .35s steps(2) 2}
+@keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(-3px,1px)}50%{transform:translate(3px,-1px)}75%{transform:translate(-2px,2px)}100%{transform:translate(0,0)}}
+.mood-badge{
+  position:absolute;top:6px;right:14px;font-size:30px;
+  filter:drop-shadow(0 0 6px rgba(0,0,0,.6));
+  animation:bob 2.4s ease-in-out infinite;
+}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* Y2K stickers around character */
+.sticker{position:absolute;font-family:var(--pixel-num);font-size:8px;color:#000;
+  background:var(--neon-yellow);padding:3px 5px;border:2px solid #000;box-shadow:3px 3px 0 #000;transform:rotate(-8deg);z-index:5}
+.sticker.s1{top:4px;left:2px;background:var(--neon-cyan);transform:rotate(-12deg)}
+.sticker.s2{bottom:18px;right:0;background:var(--neon-pink);color:#000;transform:rotate(9deg)}
+.sticker.s3{bottom:40px;left:-2px;background:#fff;transform:rotate(6deg)}
+
+.char-name{font-family:var(--pixel-num);font-size:10px;color:var(--neon-green);margin-top:4px;text-shadow:0 0 6px rgba(57,255,20,.4)}
+
+/* stat bars */
+.bars{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+.stat .stat-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.stat .stat-name{color:var(--silver)}
+.stat .stat-val{font-family:var(--pixel-num);font-size:9px;color:var(--silver)}
+.stat-track{height:14px;background:#0a0518;border:2px solid #000;box-shadow:inset 0 0 0 1px var(--panel-line);position:relative;overflow:hidden}
+.stat-fill{height:100%;width:50%;background:var(--c);box-shadow:0 0 8px var(--c);transition:width .5s cubic-bezier(.2,.8,.2,1);position:relative}
+.stat-fill::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 7px,rgba(0,0,0,.45) 7px 9px)}
+.stat.bump .stat-fill{animation:bump .4s steps(2)}
+@keyframes bump{0%{filter:brightness(2)}100%{filter:brightness(1)}}
+
+/* main buttons */
+.home-btns{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.btn{
+  font-family:var(--px);font-size:13px;cursor:pointer;
+  border:2px solid #000;background:var(--panel-2);color:var(--silver);
+  padding:13px 14px;position:relative;
+  box-shadow:inset -2px -2px 0 #000, inset 2px 2px 0 var(--panel-line), 4px 4px 0 #000;
+  transition:transform .08s, box-shadow .08s;
+  text-align:center;
+  image-rendering:pixelated;
+}
+.btn:active{transform:translate(4px,4px);box-shadow:inset -2px -2px 0 #000, inset 2px 2px 0 var(--panel-line)}
+.btn:focus-visible{outline:3px solid var(--neon-cyan);outline-offset:2px}
+.btn--primary{background:linear-gradient(180deg,var(--neon-purple),#7a24c0);color:#fff;text-shadow:1px 1px 0 #000}
+.btn--accent{background:linear-gradient(180deg,var(--neon-pink),#c01e72);color:#fff;text-shadow:1px 1px 0 #000}
+.btn--ghost{background:var(--panel);box-shadow:inset -2px -2px 0 #000, inset 2px 2px 0 var(--panel-line)}
+
+.sys-quip{
+  margin-top:16px;font-size:12px;color:var(--silver-dim);line-height:1.5;
+  border-left:3px solid var(--neon-purple);padding:8px 10px;background:rgba(177,74,237,.08);
+}
+.sys-quip b{color:var(--neon-purple)}
+
+/* ============ RECORD PAGE ============ */
+.search{
+  display:flex;align-items:center;gap:8px;background:#0a0518;border:2px solid #000;
+  box-shadow:inset 0 0 0 1px var(--panel-line);padding:10px 12px;margin-bottom:12px;
+}
+.search .ico{font-size:16px}
+.search input{
+  flex:1;background:transparent;border:none;outline:none;color:var(--neon-cyan);
+  font-family:var(--px);font-size:13px;
+}
+.search input::placeholder{color:var(--silver-dim)}
+
+.chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:0 0 auto;font-family:var(--px);font-size:12px;cursor:pointer;white-space:nowrap;
+  padding:7px 11px;border:2px solid #000;background:var(--panel-2);color:var(--silver-dim);
+  box-shadow:inset -1px -1px 0 #000, inset 1px 1px 0 var(--panel-line);
+}
+.chip.active{background:var(--neon-purple);color:#fff;text-shadow:1px 1px 0 #000}
+.chip.danger.active{background:var(--neon-pink)}
+
+.cat-head{display:flex;align-items:center;gap:8px;margin:14px 0 8px;font-family:var(--pixel-num);font-size:9px;color:var(--neon-yellow)}
+.cat-head::after{content:'';flex:1;height:2px;background:repeating-linear-gradient(90deg,var(--panel-line) 0 4px,transparent 4px 8px)}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.act-card{
+  background:var(--panel);border:2px solid #000;padding:10px;cursor:pointer;
+  box-shadow:inset -2px -2px 0 #000, inset 2px 2px 0 var(--panel-line), 3px 3px 0 #000;
+  transition:transform .08s;position:relative;display:flex;flex-direction:column;gap:5px;
+}
+.act-card:active{transform:translate(3px,3px);box-shadow:inset -2px -2px 0 #000, inset 2px 2px 0 var(--panel-line)}
+.act-card:focus-visible{outline:3px solid var(--neon-cyan);outline-offset:2px}
+.act-card.danger{border-color:var(--neon-pink);box-shadow:inset -2px -2px 0 #5c1030, inset 2px 2px 0 #ff7ab8, 3px 3px 0 #000}
+.act-card .row1{display:flex;align-items:center;gap:8px}
+.act-icon{font-size:24px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#0a0518;border:2px solid #000;flex:0 0 auto}
+.act-name{font-size:13px;color:var(--neon-green);line-height:1.2}
+.act-deltas{font-size:11px;line-height:1.5;display:flex;flex-wrap:wrap;gap:3px 7px}
+.delta{font-family:var(--pixel-num);font-size:8px}
+.delta.pos{color:var(--neon-green)}
+.delta.neg{color:var(--hp)}
+.delta .k{color:var(--silver-dim)}
+.act-tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-size:10px;padding:2px 5px;background:var(--panel-2);border:1px solid var(--panel-line);color:var(--silver-dim)}
+.danger .tag{background:#3a0f24;border-color:#ff7ab8;color:#ff9ecb}
+.act-desc{font-size:11px;color:var(--silver-dim);line-height:1.4;margin-top:auto}
+
+/* custom action ("+ 自定义") card + delete */
+.act-card.add-custom{border-style:dashed;border-color:var(--neon-cyan);justify-content:center;align-items:center;text-align:center;color:var(--neon-cyan);min-height:96px;box-shadow:inset 0 0 0 2px rgba(0,240,255,.12)}
+.act-card.add-custom:active{transform:translate(3px,3px)}
+.act-card.add-custom .plus{font-size:30px;line-height:1;color:var(--neon-cyan)}
+.act-card.add-custom .plus-lbl{font-size:11px;color:var(--neon-cyan);margin-top:4px}
+.act-card .del{position:absolute;top:4px;right:4px;width:18px;height:18px;font-size:10px;display:none;align-items:center;justify-content:center;background:#2a0a18;border:1px solid var(--neon-pink);color:var(--neon-pink);cursor:pointer;z-index:2}
+.act-card.custom .del{display:flex}
+.act-card.custom .row1{padding-right:18px}
+
+/* custom action modal (effects picker) */
+.cust-label{display:block;text-align:left;font-family:var(--pixel-num);font-size:9px;color:var(--neon-yellow);margin:10px 0 4px}
+.cust-fx{display:grid;grid-template-columns:1fr 1fr;gap:7px 14px;margin:10px 0;text-align:left}
+.fx-row{display:flex;align-items:center;gap:6px;font-family:var(--pixel-num);font-size:9px}
+.fx-k{width:62px;color:var(--silver-dim);flex:0 0 auto}
+.fx-btn{width:24px;height:24px;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;background:var(--panel-2);border:2px solid #000;box-shadow:inset -1px -1px 0 #000,inset 1px 1px 0 var(--panel-line);cursor:pointer;color:#fff}
+.fx-btn:active{transform:translate(1px,1px)}
+.fx-minus{color:var(--hp)}
+.fx-plus{color:var(--neon-green)}
+.fx-val{width:22px;text-align:center;color:#fff}
+.cust-preview{font-family:var(--pixel-num);font-size:9px;color:var(--neon-cyan);min-height:14px;margin-top:4px;text-align:left}
+
+/* ============ MODAL ============ */
+.modal-mask{position:absolute;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(4,2,12,.8)}
+.modal-mask.show{display:flex;animation:pagein .2s steps(2)}
+.modal{
+  width:100%;background:var(--panel);border:2px solid #000;
+  box-shadow:inset 0 0 0 2px var(--neon-purple), 6px 6px 0 #000, 0 0 30px rgba(177,74,237,.4);
+  animation:pop .25s cubic-bezier(.2,1.4,.4,1);
+}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.modal .win-title{background:linear-gradient(180deg,var(--neon-purple),#6a1fb0)}
+.modal-body{padding:14px;text-align:center}
+.modal-kicker{font-family:var(--pixel-num);font-size:11px;color:var(--neon-yellow);text-shadow:0 0 8px rgba(255,210,63,.5);margin-bottom:10px}
+.modal-action{font-size:15px;color:#fff;text-shadow:1px 1px 0 #000;margin-bottom:12px}
+.modal-deltas{display:flex;flex-direction:column;gap:5px;margin:10px 0;font-family:var(--pixel-num);font-size:9px}
+.modal-deltas .md{display:flex;justify-content:center;gap:8px}
+.md .mk{color:var(--silver-dim)}
+.md.pos{color:var(--neon-green)}
+.md.neg{color:var(--hp)}
+.modal-status{font-size:12px;color:var(--neon-cyan);margin:10px 0;line-height:1.4;background:rgba(0,240,255,.08);border:1px dashed var(--neon-cyan);padding:8px}
+.modal-btns{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+
+/* particles */
+.spark{position:absolute;font-size:16px;pointer-events:none;animation:spark 1s ease-out forwards;z-index:45}
+@keyframes spark{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(-50px) scale(.3);opacity:0}}
+
+/* CARE modal (low stimulation) */
+.modal.care{box-shadow:inset 0 0 0 2px #5b8cff, 6px 6px 0 #000, 0 0 30px rgba(91,140,255,.25);background:#121a30}
+.modal.care .win-title{background:linear-gradient(180deg,#5b8cff,#33509e);text-shadow:1px 1px 0 #000}
+.modal.care .modal-kicker{color:#9ec1ff;text-shadow:none}
+.modal.care .modal-action{color:#eaf1ff}
+.modal.care .modal-body{text-align:left}
+.modal.care .care-copy{font-size:12px;color:#cdd9f5;line-height:1.6;margin:6px 0 4px}
+.modal.care .care-note{font-size:11px;color:#8fa6d6;line-height:1.5;margin-bottom:6px}
+
+/* resources panel */
+.resources{display:none;margin-top:10px;border-top:1px dashed #5b8cff;padding-top:10px}
+.resources.show{display:block;animation:pagein .2s steps(2)}
+.res-item{font-size:12px;color:#dbe6ff;line-height:1.5;margin-bottom:8px;background:rgba(91,140,255,.1);padding:8px;border:1px solid #33509e}
+.res-item b{color:var(--neon-cyan)}
+
+/* ============ BACKUP (numeric code) ============ */
+.backup-note{font-size:11px;color:var(--silver-dim);line-height:1.5;margin-bottom:10px;background:rgba(0,240,255,.06);border:1px solid var(--panel-line);padding:8px 10px;text-align:left}
+.backup-sec{margin-top:12px;text-align:left}
+.backup-sec h4{font-family:var(--pixel-num);font-size:9px;color:var(--neon-yellow);margin-bottom:6px;text-align:left}
+.backup-code{
+  width:100%;height:88px;resize:none;font-family:var(--mono);font-size:15px;line-height:1.3;
+  color:var(--neon-cyan);background:#0a0518;border:2px solid #000;box-shadow:inset 0 0 0 1px var(--panel-line);
+  padding:8px;word-break:break-all;outline:none;text-align:left;
+}
+.backup-code:focus{border-color:var(--neon-cyan)}
+.backup-code::placeholder{color:var(--silver-dim)}
+.backup-msg{font-size:11px;line-height:1.5;margin-top:10px;min-height:16px;text-align:left}
+.backup-msg.ok{color:var(--neon-green)}
+.backup-msg.err{color:var(--hp)}
+.backup-msg.info{color:var(--neon-cyan)}
+
+/* ============ NICKNAME (first open) ============ */
+.nick-intro{font-size:12px;color:var(--silver);line-height:1.6;margin-bottom:14px;text-align:left}
+.nick-input{width:100%;padding:10px 12px;font-family:var(--px);font-size:14px;color:var(--silver);background:#0a0518;border:2px solid #000;box-shadow:inset 0 0 0 1px var(--panel-line);outline:none;text-align:center}
+.nick-input:focus{border-color:var(--neon-cyan)}
+.nick-input::placeholder{color:var(--silver-dim)}
+.nick-note{font-size:10px;color:var(--silver-dim);margin-top:12px;text-align:left;line-height:1.5}
+.nick-divider{display:flex;align-items:center;gap:8px;margin:16px 0 12px;color:var(--silver-dim);font-size:10px}
+.nick-divider::before,.nick-divider::after{content:"";flex:1;height:1px;background:var(--panel-line)}
+.nick-import-label{display:block;font-size:11px;color:var(--silver);margin-bottom:8px;text-align:left}
+
+/* ============ TIMELINE ============ */
+.tl-head{font-family:var(--pixel-num);font-size:10px;color:var(--neon-green);margin-bottom:10px;text-shadow:0 0 6px rgba(57,255,20,.4)}
+.log{font-family:var(--mono);font-size:17px;line-height:1.65}
+.log-line{display:flex;gap:6px;padding:5px 0;border-bottom:1px dotted var(--panel-line);align-items:baseline;flex-wrap:wrap}
+.log-time{color:var(--neon-cyan);flex:0 0 auto}
+.log-name{color:var(--silver);flex:0 0 auto}
+.log-d{font-family:var(--pixel-num);font-size:8px}
+.log-d.pos{color:var(--neon-green)}
+.log-d.neg{color:var(--hp)}
+.log-empty{text-align:center;color:var(--silver-dim);font-size:13px;padding:40px 10px;line-height:1.6}
+.summary{margin-top:18px;background:var(--panel);border:2px solid #000;box-shadow:inset -2px -2px 0 #000, inset 2px 2px 0 var(--panel-line), 4px 4px 0 #000;padding:12px}
+.summary h3{font-family:var(--pixel-num);font-size:10px;color:var(--neon-yellow);margin-bottom:10px}
+.summary .srow{font-size:12px;line-height:1.7;margin-bottom:4px}
+.summary .srow b{color:var(--neon-pink)}
+.summary .advice{margin-top:10px;font-size:12px;color:var(--neon-cyan);line-height:1.5;background:rgba(0,240,255,.08);padding:8px;border:1px dashed var(--neon-cyan)}
+
+/* ============ STATUS DETAIL ============ */
+.detail-bars{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.tags-wrap{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.stag{font-size:12px;padding:6px 10px;border:2px solid #000;background:var(--panel-2);color:var(--silver);box-shadow:inset -1px -1px 0 #000, inset 1px 1px 0 var(--panel-line)}
+.stag.warn{background:var(--neon-pink);color:#fff;text-shadow:1px 1px 0 #000}
+.stag.ok{background:var(--neon-green);color:#04210a;text-shadow:none}
+.desc-box{font-size:12px;color:var(--silver);line-height:1.6;background:rgba(177,74,237,.08);border-left:3px solid var(--neon-purple);padding:10px 12px;margin-bottom:16px}
+.suggest h3{font-family:var(--pixel-num);font-size:9px;color:var(--neon-yellow);margin-bottom:10px}
+.sug-item{font-size:12px;line-height:1.5;margin-bottom:8px;padding:8px;background:var(--panel);border:1px solid var(--panel-line)}
+.sug-item b{color:var(--neon-cyan)}
+
+/* ============ BOTTOM NAV ============ */
+.nav{
+  display:flex;border-top:2px solid #000;background:#0c0622;
+  box-shadow:inset 0 2px 0 var(--panel-line);
+}
+.nav button{
+  flex:1;background:transparent;border:none;cursor:pointer;color:var(--silver-dim);
+  font-family:var(--px);font-size:10px;padding:9px 0 11px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  border-right:1px solid #000;
+}
+.nav button:last-child{border-right:none}
+.nav button .ni{font-size:18px;filter:grayscale(.3)}
+.nav button.active{color:var(--neon-green);background:rgba(57,255,20,.07);box-shadow:inset 0 3px 0 var(--neon-green)}
+.nav button.active .ni{filter:none;animation:bob 2s ease-in-out infinite}
+
+/* floating delta */
+.float-d{position:absolute;font-family:var(--pixel-num);font-size:11px;pointer-events:none;z-index:35;animation:floatup 1.1s ease-out forwards;text-shadow:0 0 6px currentColor}
+@keyframes floatup{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-34px);opacity:0}}
+
+.glitch{position:relative;color:var(--neon-pink)}
+.glitch::before,.glitch::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;overflow:hidden}
+.glitch::before{color:var(--neon-cyan);transform:translate(-2px,0);clip-path:inset(0 0 55% 0);opacity:.8;animation:gl1 2.5s steps(2) infinite}
+.glitch::after{color:var(--neon-green);transform:translate(2px,0);clip-path:inset(55% 0 0 0);opacity:.8;animation:gl2 3.1s steps(2) infinite}
+@keyframes gl1{0%,92%,100%{transform:translate(-2px,0)}94%{transform:translate(2px,-1px)}96%{transform:translate(-3px,1px)}}
+@keyframes gl2{0%,90%,100%{transform:translate(2px,0)}93%{transform:translate(-2px,1px)}97%{transform:translate(3px,-1px)}}
+
+/* ============ BOOT / NEW DAY ============ */
+.boot{position:absolute;inset:0;z-index:60;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:linear-gradient(180deg,#0a0518,#120a2c);padding:22px;text-align:center}
+.boot.show{display:flex;animation:pagein .3s steps(3)}
+.boot .bd{font-family:var(--pixel-num);font-size:11px;color:var(--neon-cyan);text-shadow:0 0 8px rgba(0,240,255,.5);letter-spacing:1px}
+.boot .bday{font-family:var(--pixel-num);font-size:30px;color:var(--neon-yellow);text-shadow:0 0 14px rgba(255,210,63,.6)}
+.boot .bline{font-size:13px;color:var(--silver);line-height:1.7;max-width:280px}
+.boot .bstreak{font-family:var(--pixel-num);font-size:9px;color:var(--neon-green);text-shadow:0 0 6px rgba(57,255,20,.4)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="screen">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <span>PIXEL·SELF v0.1</span>
+      <span class="batt"><span id="clock">09:12</span><span class="cell"></span></span>
+    </div>
+
+    <!-- STAGE -->
+    <div class="stage" id="stage">
+
+      <!-- PAGE 1 : HOME -->
+      <section class="page active" data-page="home">
+        <div class="home-day" id="homeDay">DAY --</div>
+        <div class="home-status" id="homeStatus">状态：半死不活但还在运行</div>
+
+        <div class="char-stage">
+          <div class="sticker s1">★ LOADING</div>
+          <div class="sticker s2">⚠ BUG?</div>
+          <div class="sticker s3">♥ HP?</div>
+          <div class="char-wrap">
+            <span class="mood-badge" id="moodBadge">😌</span>
+            <svg class="char-svg" id="charSvg" data-mood="ok" viewBox="0 0 80 80" shape-rendering="crispEdges">
+              <!-- body -->
+              <rect class="char-body" x="22" y="20" width="36" height="40" fill="#39ff14"/>
+              <rect class="char-body" x="16" y="28" width="8" height="24" fill="#39ff14"/>
+              <rect class="char-body" x="56" y="28" width="8" height="24" fill="#39ff14"/>
+              <rect class="char-body" x="28" y="14" width="8" height="8" fill="#39ff14"/>
+              <rect class="char-body" x="44" y="14" width="8" height="8" fill="#39ff14"/>
+              <!-- outline accents -->
+              <rect x="22" y="20" width="36" height="2" fill="#0a0518" opacity=".0"/>
+              <!-- eyes -->
+              <g id="eyes">
+                <rect x="30" y="34" width="8" height="10" fill="#fff"/>
+                <rect x="42" y="34" width="8" height="10" fill="#fff"/>
+                <rect class="pupil" x="32" y="38" width="4" height="5" fill="#0a0518"/>
+                <rect class="pupil" x="44" y="38" width="4" height="5" fill="#0a0518"/>
+              </g>
+              <!-- mouth variants -->
+              <g id="mouth-ok"><rect x="34" y="54" width="12" height="3" fill="#0a0518"/></g>
+              <g id="mouth-sad" style="display:none"><rect x="34" y="57" width="12" height="2" fill="#0a0518"/></g>
+              <g id="mouth-dead" style="display:none"><rect x="30" y="56" width="20" height="2" fill="#0a0518"/></g>
+              <g id="mouth-hype" style="display:none"><rect x="34" y="52" width="12" height="5" fill="#0a0518"/></g>
+              <g id="mouth-chaos" style="display:none">
+                <rect x="32" y="53" width="3" height="3" fill="#0a0518"/><rect x="37" y="55" width="3" height="3" fill="#0a0518"/><rect x="42" y="53" width="3" height="3" fill="#0a0518"/>
+              </g>
+              <!-- sweat for sad -->
+              <g id="tear" style="display:none"><rect x="26" y="40" width="3" height="6" fill="#5b8cff"/></g>
+              <!-- halo for zero state (white angel slime) -->
+              <g id="halo" style="display:none">
+                <ellipse cx="40" cy="7" rx="17" ry="5" fill="none" stroke="#ffd86b" stroke-width="3"/>
+                <ellipse cx="40" cy="7" rx="17" ry="5" fill="none" stroke="#fff3bf" stroke-width="1"/>
+              </g>
+            </svg>
+          </div>
+          <div class="char-name" id="charName">UNIT-07 · 你</div>
+        </div>
+
+        <div class="bars" id="homeBars"></div>
+
+        <div class="home-btns">
+          <button class="btn btn--primary" data-go="record">▷ 记录动作</button>
+          <button class="btn btn--accent" data-go="timeline">☰ 查看今天</button>
+          <button class="btn btn--ghost" data-go="status">◈ 状态日志</button>
+          <button class="btn btn--ghost" id="openBackup">🔐 备份码 / 本地存档</button>
+        </div>
+
+        <div class="sys-quip" id="sysQuip"></div>
+      </section>
+
+      <!-- PAGE 2 : RECORD -->
+      <section class="page" data-page="record">
+        <div class="search">
+          <span class="ico">🔍</span>
+          <input id="searchInput" type="text" placeholder="你刚刚干了什么？" aria-label="搜索动作" />
+        </div>
+        <div class="chips" id="chips"></div>
+        <div id="catList"></div>
+      </section>
+
+      <!-- PAGE 4 : TIMELINE -->
+      <section class="page" data-page="timeline">
+        <div class="tl-head" id="tlHead">▶ 今日战斗日志 / DAY --</div>
+        <div id="logList"></div>
+        <div class="summary" id="summary"></div>
+      </section>
+
+      <!-- PAGE 5 : STATUS DETAIL -->
+      <section class="page" data-page="status">
+        <div class="detail-bars" id="detailBars"></div>
+        <div class="tags-wrap" id="statusTags"></div>
+        <div class="desc-box" id="statusDesc"></div>
+        <div class="suggest">
+          <h3>▶ 系统建议动作</h3>
+          <div id="suggestList"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav class="nav" id="nav">
+      <button data-go="home" class="active"><span class="ni">🏠</span>首页</button>
+      <button data-go="record"><span class="ni">🎮</span>记录</button>
+      <button data-go="timeline"><span class="ni">📜</span>时间线</button>
+      <button data-go="status"><span class="ni">📊</span>状态</button>
+    </nav>
+
+    <!-- MODAL: FEEDBACK -->
+    <div class="modal-mask" id="modalMask">
+      <div class="modal" id="modal" role="dialog" aria-modal="true">
+        <div class="win-title"><span id="modalTitle">ACTION LOGGED</span><span class="dots"><span class="dot" title="关闭" role="button" aria-label="关闭" tabindex="0"></span></span></div>
+        <div class="modal-body" id="modalBody"></div>
+      </div>
+    </div>
+
+    <!-- BOOT: NEW DAY -->
+    <div class="boot" id="boot">
+      <div class="bd">▣ SYSTEM BOOT</div>
+      <div class="bday" id="bootDay">DAY 1</div>
+      <div class="bline" id="bootLine"></div>
+      <div class="bstreak" id="bootStreak"></div>
+      <button class="btn btn--primary" id="bootStart">▶ 开始这一天</button>
+    </div>
+
+    <!-- MODAL: NICKNAME (first open) -->
+    <div class="modal-mask" id="nickMask">
+      <div class="modal" id="nickModal" role="dialog" aria-modal="true">
+        <div class="win-title"><span>设置你的代号</span><span class="dots"></span></div>
+        <div class="modal-body">
+          <div class="nick-intro">给这台掌机里的角色起个名字吧。<br>它会一直陪着你，记录你每天是哪种像素生物。</div>
+          <input class="nick-input" id="nickInput" maxlength="10" placeholder="例如：阿废 / pixel / 01" aria-label="昵称" />
+          <div class="modal-btns">
+            <button class="btn btn--primary" id="nickStart">▶ 进入</button>
+          </div>
+          <div class="nick-divider"><span>或</span></div>
+          <div class="nick-import">
+            <label class="nick-import-label" for="nickCode">已有数字备份码？直接导入</label>
+            <textarea class="backup-code" id="nickCode" placeholder="把你的纯数字备份码粘贴到这里……" aria-label="粘贴数字备份码"></textarea>
+            <div class="modal-btns">
+              <button class="btn btn--accent" id="nickImportBtn">↧ 导入备份码</button>
+            </div>
+            <div class="backup-msg" id="nickMsg"></div>
+          </div>
+          <div class="nick-note">名字只存在你这台设备（localStorage），不上传任何服务器。之后也可以在「🔐 备份码 / 本地存档」里导出数字码带走。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: BACKUP (numeric code, local-only) -->
+    <div class="modal-mask" id="backupMask">
+      <div class="modal" id="backupModal" role="dialog" aria-modal="true">
+        <div class="win-title"><span>本地存档 · 数字备份码</span><span class="dots"><span class="dot" title="关闭" role="button" aria-label="关闭" tabindex="0"></span></span></div>
+        <div class="modal-body">
+          <div class="backup-note">所有数据只存在你这台设备，不经过任何服务器。导出为一段纯数字码，自己留存或发给朋友；换新设备 / 清缓存时，可在首次打开（设置昵称）界面用数字码导入恢复（含昵称）。</div>
+          <div class="backup-sec">
+            <h4>▣ 导出（你的数字码）</h4>
+            <textarea class="backup-code" id="backupCode" readonly aria-label="数字备份码"></textarea>
+            <div class="modal-btns">
+              <button class="btn btn--primary" id="backupCopy">⧉ 复制数字码</button>
+            </div>
+          </div>
+          <div class="backup-msg info" id="backupMsg"></div>
+          <div class="modal-btns">
+            <button class="btn btn--ghost" id="backupClear">🗑 清除本机存档</button>
+            <button class="btn btn--ghost" id="backupClose">✕ 关闭</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: CUSTOM ACTION -->
+    <div class="modal-mask" id="custMask">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="win-title"><span>自定义动作 · <span id="custCatName"></span></span><span class="dots"><span class="dot" title="关闭" role="button" aria-label="关闭" tabindex="0"></span></span></div>
+        <div class="modal-body">
+          <div class="modal-kicker">给这个分类加一条属于你自己的记录</div>
+          <label class="cust-label" for="custName">名称</label>
+          <input class="nick-input" id="custName" maxlength="10" placeholder="例如：点了杯奶茶" aria-label="自定义动作名称" />
+          <label class="cust-label" for="custIcon">图标（可选，填一个 emoji）</label>
+          <input class="nick-input cust-icon-input" id="custIcon" maxlength="2" placeholder="✨" aria-label="自定义动作图标" />
+          <div class="cust-label">效果（点 ＋ / − 调整，0 表示不影响）</div>
+          <div class="cust-fx" id="custFx"></div>
+          <div class="cust-preview" id="custPreview"></div>
+          <div class="backup-msg info" id="custMsg"></div>
+          <div class="modal-btns">
+            <button class="btn btn--primary" id="custSave">✓ 保存这条动作</button>
+            <button class="btn btn--ghost" id="custCancel">✕ 取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ============ STATE ============ */
+const STAT_META = {
+  HP:{label:'HP 血量',color:'var(--hp)',init:58},
+  SAN:{label:'SAN 精神值',color:'var(--san)',init:44},
+  HYPE:{label:'HYPE 兴奋度',color:'var(--hype)',init:62},
+  CHAOS:{label:'CHAOS 混乱值',color:'var(--chaos)',init:30},
+  AWAKE:{label:'AWAKE 清醒度',color:'var(--awake)',init:50},
+  HUNGER:{label:'HUNGER 饥饿值',color:'var(--hunger)',init:40},
+  CLEAN:{label:'CLEAN 洁净度',color:'var(--clean)',init:55},
+  SOCIAL:{label:'SOCIAL 社交能量',color:'var(--social)',init:48},
+  MONEY:{label:'MONEY 金钱值',color:'var(--money)',init:70},
+  CONTROL:{label:'CONTROL 自控力',color:'var(--control)',init:52},
+  PRESSURE:{label:'PRESSURE 压力值',color:'#ff7ab8',init:55},
+  HEARTBEAT:{label:'HEARTBEAT 心跳',color:'#ff5e7a',init:40},
+};
+const HOME_STATS=['HP','SAN','HYPE','CHAOS'];
+const DETAIL_STATS=['HP','SAN','HYPE','CHAOS','CLEAN','SOCIAL','AWAKE','HUNGER','MONEY','CONTROL'];
+
+let stats={};
+let todayLog=[];
+
+/* ============ SAVE / DAILY SYSTEM ============ */
+const SAVE_KEY='pixself_v1';
+const MORNING_BASE={HP:72,SAN:66,HYPE:38,CHAOS:18,AWAKE:58,HUNGER:60,CLEAN:48,SOCIAL:56,MONEY:70,CONTROL:62,PRESSURE:38,HEARTBEAT:38};
+const BOOT_LINES=[
+  '新的一天。系统已为你重新编译，但 bug 还在。',
+  '你又被加载进了这个世界。祝你好运。',
+  '启动完成。今天的你，是一张没被写过的像素画。',
+  '警告：今天也可能烂透。但至少，是新的一天。',
+  '系统自检通过。灵魂状态：未知。继续运行。',
+  'DAY 已滚动。昨天的你已存档，今天重新开机。',
+];
+let save=null, isNewDay=false;
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function yesterdayStr(){const d=new Date(Date.now()-86400000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dayDiff(a,b){return Math.floor((new Date(b)-new Date(a))/86400000);}
+function dayNumber(){return dayDiff(save.startDate, todayStr())+1;}
+function saveSave(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
+function loadSave(){
+  try{save=JSON.parse(localStorage.getItem(SAVE_KEY));}catch(e){save=null;}
+  if(!save||!save.startDate||!save.days){
+    const t=todayStr();
+    save={startDate:t,lastDate:t,streak:1,nick:'',customActions:[],days:{[t]:{stats:{...MORNING_BASE},log:[]}}};
+    isNewDay=true;
+  }
+}
+function ensureToday(){
+  const t=todayStr();
+  if(!save.days[t]){
+    save.days[t]={stats:{...MORNING_BASE},log:[]};
+    isNewDay=true;
+    if(save.lastDate===yesterdayStr()) save.streak=(save.streak||1)+1;
+    else save.streak=1;
+  }
+  save.lastDate=t;
+  saveSave();
+}
+function curDay(){return save.days[todayStr()];}
+function updateDayLabels(){
+  const n=dayNumber();
+  $('#homeDay').textContent='DAY '+n;
+  $('#tlHead').textContent='▶ 今日战斗日志 / DAY '+n;
+}
+function showNewDay(){
+  $('#bootDay').textContent='DAY '+dayNumber();
+  $('#bootStreak').textContent='连续存活 '+save.streak+' 天';
+  $('#bootLine').textContent=BOOT_LINES[dayNumber()%BOOT_LINES.length];
+  $('#boot').classList.add('show');
+}
+
+/* ============ ACTION DATABASE ============ */
+const CATS=[
+  {id:'all',name:'全部'},
+  {id:'饮食',name:'🍔 饮食'},
+  {id:'od',name:'💊 OD',danger:true},
+  {id:'睡眠',name:'🌙 睡眠'},
+  {id:'情绪',name:'💢 情绪'},
+  {id:'身体',name:'🚿 身体'},
+  {id:'社交',name:'💬 社交'},
+  {id:'work',name:'💼 学习/工作'},
+  {id:'消费',name:'🛍️ 消费'},
+  {id:'net',name:'📱 上网'},
+  {id:'danger',name:'⚠ 危险状态',danger:true},
+];
+const ACTIONS=[
+  // 饮食
+  {name:'喝魔爪',cat:'饮食',icon:'🥤',d:{HYPE:2,AWAKE:1,SAN:-1},tags:['咖啡因','过载'],desc:'你短暂地获得了人工生命力。'},
+  {name:'喝咖啡',cat:'饮食',icon:'☕',d:{AWAKE:1,HYPE:1},tags:['咖啡因'],desc:'人工清醒剂已注入血管。'},
+  {name:'吃正餐',cat:'饮食',icon:'🍱',d:{HP:3,HUNGER:-3},tags:['回血','稳定'],desc:'系统检测到你终于像人类一样进食。'},
+  {name:'没吃饭',cat:'饮食',icon:'🍽️',d:{HUNGER:2,HP:-1,SAN:-1},tags:['饥饿','掉血'],desc:'你的胃发出了系统警报。'},
+  {name:'吃垃圾食品',cat:'饮食',icon:'🍟',d:{HP:1,CHAOS:1},tags:['快乐','虚肥'],desc:'热量已换算为临时幸福值。'},
+  // 睡眠
+  {name:'熬夜',cat:'睡眠',icon:'🌙',d:{SAN:-2,AWAKE:-2,CHAOS:1},tags:['崩坏','拖延'],desc:'你的角色正在进入低电量模式。'},
+  {name:'早睡',cat:'睡眠',icon:'😴',d:{HP:2,SAN:2,CONTROL:1},tags:['回血','自律'],desc:'难得的一次正确操作。'},
+  {name:'通宵',cat:'睡眠',icon:'💀',d:{HP:-3,SAN:-3,CHAOS:3},tags:['崩坏','硬核'],desc:'你已脱离人类作息轨道。'},
+  {name:'午睡',cat:'睡眠',icon:'🛏️',d:{AWAKE:1,SAN:1},tags:['回血'],desc:'短暂重启成功。'},
+  // 情绪
+  {name:'哭了',cat:'情绪',icon:'😢',d:{SAN:-1,PRESSURE:-2},tags:['释放','情绪'],desc:'虽然掉了一点精神值，但压力条下降了。'},
+  {name:'开心',cat:'情绪',icon:'😊',d:{SAN:2,HYPE:1},tags:['正面','情绪'],desc:'系统检测到一次罕见的正面事件。'},
+  {name:'发疯',cat:'情绪',icon:'🤪',d:{CHAOS:3,HYPE:1,CONTROL:-2},tags:['崩坏','过载'],desc:'逻辑模块已暂时离线。'},
+  {name:'焦虑',cat:'情绪',icon:'😰',d:{SAN:-2,HEARTBEAT:1},tags:['情绪','过载'],desc:'你的心跳噪音超过了背景音乐。'},
+  {name:'被夸了',cat:'情绪',icon:'🌟',d:{SAN:1,SOCIAL:1},tags:['正面','社交'],desc:'外部正向信号已接收。'},
+  // 身体
+  {name:'洗澡',cat:'身体',icon:'🚿',d:{CLEAN:3,SAN:1},tags:['净化','重启'],desc:'角色完成了一次系统清理。'},
+  {name:'散步',cat:'身体',icon:'🚶',d:{SAN:2,CHAOS:-1},tags:['净化','稳定'],desc:'你离开屏幕呼吸了真实空气。'},
+  {name:'运动',cat:'身体',icon:'🏃',d:{HP:2,SAN:1},tags:['回血','自律'],desc:'肌肉内存已更新。'},
+  {name:'刷牙',cat:'身体',icon:'🪥',d:{CLEAN:1,CONTROL:1},tags:['干净','自律'],desc:'基础维护已完成。'},
+  {name:'生病',cat:'身体',icon:'🤒',d:{HP:-3,AWAKE:-2},tags:['掉血','异常'],desc:'系统检测到硬件故障。'},
+  // 社交
+  {name:'和朋友聊天',cat:'社交',icon:'💬',d:{SOCIAL:1,SAN:1},tags:['社交','正面'],desc:'连接已建立。'},
+  {name:'社交过载',cat:'社交',icon:'😵‍💫',d:{SOCIAL:-3,SAN:-1},tags:['耗尽','异常'],desc:'社交电量见底。'},
+  {name:'吵架',cat:'社交',icon:'😤',d:{SAN:-2,CHAOS:2},tags:['冲突','崩坏'],desc:'好感度下降。'},
+  {name:'独处',cat:'社交',icon:'🌿',d:{SOCIAL:1,SAN:1},tags:['充电','稳定'],desc:'单人副本进行中。'},
+  {name:'被迫社交',cat:'社交',icon:'😣',d:{SOCIAL:-2,SAN:-1},tags:['耗尽'],desc:'电量被强制扣除。'},
+  // work
+  {name:'完成任务',cat:'work',icon:'✅',d:{CONTROL:2,SAN:1},tags:['自律','正面'],desc:'你击败了一个小 boss。'},
+  {name:'拖延',cat:'work',icon:'⏳',d:{CONTROL:-1,CHAOS:1},tags:['崩坏','拖延'],desc:'任务正在后台堆积。'},
+  {name:'加班',cat:'work',icon:'💼',d:{HP:-1,SAN:-2,MONEY:1},tags:['掉血','赚钱'],desc:'用寿命换取货币。'},
+  {name:'摸鱼',cat:'work',icon:'🐟',d:{CONTROL:-1,SAN:1},tags:['摸鱼','释放'],desc:'偷来的快乐也是快乐。'},
+  {name:'交付项目',cat:'work',icon:'📦',d:{CONTROL:3,PRESSURE:-2},tags:['成就','释放'],desc:'大 boss 已击破。'},
+  // 消费
+  {name:'买东西',cat:'消费',icon:'🛍️',d:{MONEY:-1,HYPE:1},tags:['消费','兴奋'],desc:'钱包轻了，心情重了。'},
+  {name:'发工资',cat:'消费',icon:'💰',d:{MONEY:3,SAN:2},tags:['赚钱','正面'],desc:'货币注入成功。'},
+  {name:'冲动消费',cat:'消费',icon:'💸',d:{MONEY:-2,CONTROL:-1,HYPE:2},tags:['失控','兴奋'],desc:'理智已离线。'},
+  {name:'点外卖',cat:'消费',icon:'🍜',d:{MONEY:-1,HUNGER:-2},tags:['消费','回血'],desc:'热乎的像素食物已送达。'},
+  {name:'省钱成功',cat:'消费',icon:'🐷',d:{MONEY:1,CONTROL:1},tags:['自律'],desc:'存款 +1，你真稳。'},
+  // net
+  {name:'刷短视频',cat:'net',icon:'📱',d:{CONTROL:-2,CHAOS:1},tags:['失控','过载'],desc:'你被信息洪流吞了一口。'},
+  {name:'赢了游戏',cat:'net',icon:'🎮',d:{HYPE:2,SAN:1},tags:['正面','游戏'],desc:'胜利动画已播放。'},
+  {name:'深夜网抑云',cat:'net',icon:'🌌',d:{SAN:-2,CHAOS:1},tags:['情绪','夜晚'],desc:'凌晨三点的你不太对。'},
+  {name:'断网',cat:'net',icon:'✂️',d:{CHAOS:1,CONTROL:1},tags:['自律','异常'],desc:'你主动切断了信号。'},
+  {name:'刷到前任',cat:'net',icon:'💔',d:{SAN:-2,CHAOS:2},tags:['崩坏'],desc:'历史记录已重新加载。'},
+  // danger (care modal)
+  {name:'自伤冲动',cat:'danger',icon:'💢',d:{HP:-2,SAN:-3},danger:true,tags:['危险'],desc:'这不是失败，也不是成就。'},
+  {name:'想消失',cat:'danger',icon:'🌫️',d:{SAN:-4},danger:true,tags:['危险'],desc:'你似乎正在经历一个很难的时刻。'},
+  {name:'极度崩溃',cat:'danger',icon:'🆘',d:{SAN:-4,CHAOS:3},danger:true,tags:['危险'],desc:'建议联系一个可信任的人。'},
+  {name:'饮酒过量',cat:'danger',icon:'🍺',d:{HP:-2,CONTROL:-3},danger:true,tags:['危险'],desc:'系统建议暂停并喝水。'},
+  // OD（受管制/有滥用药理风险，统一走危险关怀路径，不奖励、不庆祝）
+  {name:'右美沙芬',cat:'od',icon:'💊',d:{SAN:2,HP:-2,AWAKE:-2,CONTROL:-1},danger:true,tags:['药物','风险'],desc:'中枢抑制与分离感。'},
+  {name:'愈美片',cat:'od',icon:'💊',d:{SAN:1,HP:-1,AWAKE:-1},danger:true,tags:['药物','风险'],desc:'含右美沙芬的复方制剂。'},
+  {name:'普瑞巴林',cat:'od',icon:'💊',d:{SAN:2,HP:-1,AWAKE:-2,CHAOS:1},danger:true,tags:['药物','风险'],desc:'GABA 能抑制，镇静与欣快。'},
+  {name:'曲马多',cat:'od',icon:'💊',d:{SAN:2,HP:-2,AWAKE:-2,CHAOS:1},danger:true,tags:['药物','风险'],desc:'阿片类镇痛，呼吸抑制风险。'},
+  {name:'美金刚',cat:'od',icon:'💊',d:{SAN:1,HP:-2,CONTROL:-2},danger:true,tags:['药物','风险'],desc:'NMDA 拮抗，高剂量分离感。'},
+  {name:'安定',cat:'od',icon:'💊',d:{SAN:2,HP:-1,AWAKE:-2,CHAOS:1},danger:true,tags:['药物','风险'],desc:'苯二氮䓬类，镇静与去抑制。'},
+  {name:'阿普唑仑',cat:'od',icon:'💊',d:{SAN:2,HP:-1,AWAKE:-2,CHAOS:1},danger:true,tags:['药物','风险'],desc:'苯二氮䓬类，抗焦虑镇静。'},
+  {name:'氯硝西泮',cat:'od',icon:'💊',d:{SAN:2,HP:-1,AWAKE:-2,CHAOS:1},danger:true,tags:['药物','风险'],desc:'苯二氮䓬类，长效镇静。'},
+  {name:'佐匹克隆',cat:'od',icon:'💊',d:{SAN:1,HP:-1,AWAKE:-2},danger:true,tags:['药物','风险'],desc:'镇静催眠，助眠但抑制中枢。'},
+];
+
+/* ============ HELPERS ============ */
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+const clamp=(v)=>Math.max(0,Math.min(100,v));
+function nowTime(){const d=new Date();return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+
+/* ============ RENDER: STAT BARS ============ */
+function statBarHTML(key,val){
+  const m=STAT_META[key];
+  return `<div class="stat" data-stat="${key}" style="--c:${m.color}">
+    <div class="stat-top"><span class="stat-name">${m.label}</span><span class="stat-val">${val}</span></div>
+    <div class="stat-track"><div class="stat-fill" style="width:${clamp(val)}%"></div></div>
+  </div>`;
+}
+function renderHomeBars(){
+  $('#homeBars').innerHTML=HOME_STATS.map(k=>statBarHTML(k,stats[k])).join('');
+}
+function renderDetailBars(){
+  $('#detailBars').innerHTML=DETAIL_STATS.map(k=>statBarHTML(k,stats[k])).join('');
+}
+
+/* ============ CHARACTER MOOD ============ */
+function computeMood(){
+  // 归零戏谑优先：任意属性归 0，不给焦虑感，用无所谓口吻
+  const zKeys=Object.keys(STAT_META).filter(k=>stats[k]===0);
+  if(zKeys.length){
+    const k=zKeys[0];
+    const short=STAT_META[k].label.split(' ')[0];
+    return {mood:'zero',color:'#ffffff',emoji:'😇',
+      title:ZERO_LINES[Math.floor(Math.random()*ZERO_LINES.length)].replace('{x}',short)};
+  }
+  if(stats.HP<30) return {mood:'dead',color:'#b8324f',emoji:'💀',
+    title:'状态：半死不活但还在运行',
+    badge:'低血量'};
+  if(stats.CHAOS>55) return {mood:'chaos',color:'#b14aed',emoji:'🤯',
+    title:'状态：系统过载，逻辑模块冒烟',
+    badge:'过载'};
+  if(stats.HYPE>65) return {mood:'hype',color:'#ff8a00',emoji:'🤩',
+    title:'状态：人工生命力充沛',
+    badge:'兴奋'};
+  if(stats.SAN<35) return {mood:'sad',color:'#3a4a8c',emoji:'😞',
+    title:'状态：精神值偏低，建议重启',
+    badge:'低精神'};
+  return {mood:'ok',color:'#39ff14',emoji:'😌',
+    title:'状态：勉强在线',
+    badge:'稳定'};
+}
+function applyMood(){
+  const mm=computeMood();
+  const svg=$('#charSvg');
+  svg.setAttribute('data-mood',mm.mood);
+  // recolor body blocks
+  svg.querySelectorAll('rect.char-body').forEach(r=>r.setAttribute('fill',mm.color));
+  // mouth
+  ['ok','sad','dead','hype','chaos'].forEach(m=>{
+    const g=svg.querySelector('#mouth-'+m); if(g) g.style.display=(m===mm.mood)?'block':'none';
+  });
+  // eyes: chaos => X, dead/sad => pupils down + tear
+  const eyes=svg.querySelector('#eyes');
+  const pup=svg.querySelectorAll('.pupil');
+  const tear=svg.querySelector('#tear');
+  if(mm.mood==='chaos'){
+    eyes.innerHTML='<rect x="30" y="34" width="8" height="2" fill="#0a0518"/><rect x="30" y="42" width="8" height="2" fill="#0a0518"/><rect x="42" y="34" width="8" height="2" fill="#0a0518"/><rect x="42" y="42" width="8" height="2" fill="#0a0518"/>';
+  }else if(mm.mood==='dead'){
+    eyes.innerHTML='<rect x="30" y="38" width="8" height="3" fill="#0a0518"/><rect x="42" y="38" width="8" height="3" fill="#0a0518"/>';
+  }else{
+    eyes.innerHTML='<rect x="30" y="34" width="8" height="10" fill="#fff"/><rect x="42" y="34" width="8" height="10" fill="#fff"/><rect class="pupil" x="32" y="'+(mm.mood==='sad'?'40':'38')+'" width="4" height="5" fill="#0a0518"/><rect class="pupil" x="44" y="'+(mm.mood==='sad'?'40':'38')+'" width="4" height="5" fill="#0a0518"/>';
+  }
+  if(tear) tear.style.display=(mm.mood==='sad')?'block':'none';
+  const halo=svg.querySelector('#halo'); if(halo) halo.style.display=(mm.mood==='zero')?'block':'none';
+  $('#moodBadge').textContent=mm.emoji;
+  $('#homeStatus').textContent=mm.title;
+}
+
+/* ============ QUIPS ============ */
+const QUIPS=[
+  '系统提示：你今天摄入的咖啡因已经开始接管身体。',
+  '系统提示：你已连续存活 {streak} 天，系统表示尊重。',
+  '系统提示：你的精神值偏低，但嘴硬值拉满。',
+  '系统提示：本日逻辑模块运行不稳定，属正常现象。',
+  '系统提示：你不是坏了，你只是需要一次重启。',
+  '系统提示：检测到未完成事项 ∞ 个，建议假装没看见。',
+];
+const ZERO_LINES=[
+  '{x} 归零了。别紧张，它今天只是想躺平。',
+  '检测到 {x} = 0。系统已为你申请了一张"无所谓"许可证。',
+  '{x} 空了。正好，省得你天天盯着它看。',
+  '今天 {x} 选择罢工。我们表示充分理解。',
+  '{x} 归零。没什么大不了的，明天还能重新充。',
+  '你有一项数值空了。但你人还在这儿，这就够可以了。',
+];
+function renderQuip(){const q=QUIPS[Math.floor(Math.random()*QUIPS.length)].replace('{streak}',save.streak||1);$('#sysQuip').innerHTML='<b>SYSTEM:</b> '+q;}
+
+/* ============ RECORD PAGE ============ */
+let activeCat='all', searchTerm='';
+function renderChips(){
+  $('#chips').innerHTML=CATS.map(c=>
+    `<div class="chip ${c.danger?'danger':''} ${c.id===activeCat?'active':''}" data-cat="${c.id}">${c.name}</div>`
+  ).join('');
+  $$('#chips .chip').forEach(ch=>ch.onclick=()=>{activeCat=ch.dataset.cat;searchTerm='';$('#searchInput').value='';renderChips();renderCards();});
+}
+function allActions(){return ACTIONS.concat(save.customActions||[]);}
+function addCustomCard(cat){
+  if(cat==='danger')return '';
+  const c=CATS.find(x=>x.id===cat);
+  const nm=c?c.name.replace(/^[^ ]+ /,''):cat;
+  return `<div class="act-card add-custom" data-catadd="${cat}" tabindex="0" role="button" aria-label="为${nm}新增自定义动作">
+    <div class="plus">＋</div><div class="plus-lbl">自定义</div></div>`;
+}
+function renderCards(){
+  const acts=allActions();
+  let list=acts.filter(a=>activeCat==='all'||a.cat===activeCat);
+  if(searchTerm){list=acts.filter(a=>a.name.includes(searchTerm)||a.tags.some(t=>t.includes(searchTerm)));}
+  // group by category when no search and cat=all
+  if(!searchTerm && activeCat==='all'){
+    let html='';
+    CATS.filter(c=>c.id!=='all').forEach(c=>{
+      const items=acts.filter(a=>a.cat===c.id);
+      if(!items.length && c.id==='danger')return;
+      html+=`<div class="cat-head">${c.name}</div>`;
+      html+=`<div class="cards">${items.map(cardHTML).join('')}${addCustomCard(c.id)}</div>`;
+    });
+    $('#catList').innerHTML=html;
+  }else if(!searchTerm){
+    $('#catList').innerHTML=`<div class="cards">${list.map(cardHTML).join('')}${addCustomCard(activeCat)}</div>`;
+  }else{
+    $('#catList').innerHTML=list.length
+      ? `<div class="cards">${list.map(cardHTML).join('')}</div>`
+      : `<div class="log-empty">没有匹配的动作。<br>试试「喝魔爪」「哭了」「洗澡」？</div>`;
+  }
+  $$('#catList .act-card:not(.add-custom):not(.custom)').forEach(card=>card.onclick=()=>recordAction(card.dataset.name));
+  $$('#catList .add-custom').forEach(card=>card.onclick=()=>openCust(card.dataset.catadd));
+  $$('#catList .act-card.custom').forEach(card=>card.onclick=()=>recordAction(card.dataset.name));
+  $$('#catList .del').forEach(d=>d.onclick=e=>{e.stopPropagation();removeCustom(d.dataset.delid);});
+}
+function cardHTML(a){
+  const deltas=Object.entries(a.d).map(([k,v])=>
+    `<span class="delta ${v>=0?'pos':'neg'}"><span class="k">${k}</span> ${v>=0?'+':''}${v}</span>`
+  ).join('');
+  const tags=a.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+  const del=a.custom?`<div class="del" data-delid="${a.id}" title="删除自定义动作" role="button" aria-label="删除 ${a.name}">✕</div>`:'';
+  const cls='act-card '+(a.danger?'danger ':'')+(a.custom?'custom ':'');
+  return `<div class="${cls}" data-name="${a.name}" tabindex="0" role="button" aria-label="记录 ${a.name}">
+    ${del}
+    <div class="row1"><div class="act-icon">${a.icon}</div><div class="act-name">${a.name}</div></div>
+    <div class="act-deltas">${deltas}</div>
+    <div class="act-tags">${tags}</div>
+    <div class="act-desc">${a.desc}</div>
+  </div>`;
+}
+
+/* ============ CUSTOM ACTIONS ============ */
+let custCat='', custFx={};
+function openCust(cat){
+  custCat=cat;
+  const c=CATS.find(x=>x.id===cat);
+  $('#custCatName').textContent=c?c.name.replace(/^[^ ]+ /,''):cat;
+  $('#custName').value='';
+  $('#custIcon').value='';
+  $('#custMsg').textContent='';$('#custMsg').className='backup-msg info';
+  renderCustFx();
+  $('#custMask').classList.add('show');
+}
+function renderCustFx(){
+  custFx={};
+  $('#custFx').innerHTML=DETAIL_STATS.map(k=>
+    `<div class="fx-row"><span class="fx-k">${STAT_META[k].label.split(' ')[0]}</span>`+
+    `<button class="fx-btn fx-minus" data-k="${k}" aria-label="${k} 减">−</button>`+
+    `<span class="fx-val" id="fxv_${k}">0</span>`+
+    `<button class="fx-btn fx-plus" data-k="${k}" aria-label="${k} 加">＋</button></div>`
+  ).join('');
+  $$('#custFx .fx-minus').forEach(b=>b.onclick=()=>chgFx(b.dataset.k,-1));
+  $$('#custFx .fx-plus').forEach(b=>b.onclick=()=>chgFx(b.dataset.k,1));
+  updateCustPreview();
+}
+function chgFx(k,delta){
+  custFx[k]=clamp((custFx[k]||0)+delta,-5,5);
+  const el=document.getElementById('fxv_'+k); if(el)el.textContent=custFx[k];
+  updateCustPreview();
+}
+function updateCustPreview(){
+  const parts=DETAIL_STATS.filter(k=>custFx[k]).map(k=>`${k} ${custFx[k]>0?'+':''}${custFx[k]}`);
+  $('#custPreview').textContent=parts.length?('效果：'+parts.join(' / ')):'（暂未设置效果，点 ＋ / − 调整）';
+}
+function saveCust(){
+  const name=$('#custName').value.trim();
+  if(!name){$('#custMsg').textContent='先给这条动作起个名字。';$('#custMsg').className='backup-msg err';return;}
+  const icon=$('#custIcon').value.trim()||'✨';
+  const d={}; DETAIL_STATS.forEach(k=>{if(custFx[k])d[k]=custFx[k];});
+  const action={id:'c'+Date.now(),name,cat:custCat,icon,d,desc:'自定义动作 · '+name,custom:true,tags:['自定义']};
+  if(!save.customActions)save.customActions=[];
+  save.customActions.push(action);
+  saveSave();
+  $('#custMask').classList.remove('show');
+  renderCards(); // 记录页滚动位置保持不变（只重绘列表，不动 stage）
+}
+function removeCustom(id){
+  if(!save.customActions)return;
+  save.customActions=save.customActions.filter(a=>a.id!==id);
+  saveSave();
+  renderCards();
+}
+
+/* ============ RECORD ACTION ============ */
+function recordAction(name){
+  const a=allActions().find(x=>x.name===name); if(!a)return;
+  const time=nowTime();
+  const deltas=[];
+  Object.entries(a.d).forEach(([k,v])=>{
+    if(stats[k]===undefined)stats[k]=STAT_META[k]?STAT_META[k].init:50;
+    stats[k]=clamp(stats[k]+v);
+    deltas.push({k,v});
+  });
+  todayLog.push({time,name,deltas});
+  renderHomeBars();renderDetailBars();applyMood();
+  // shake char on negative
+  if(deltas.some(d=>d.v<0)){$('#charSvg').classList.add('shake');setTimeout(()=>$('#charSvg').classList.remove('shake'),700);}
+  floatDeltas(deltas);
+  if(a.danger && a.cat!=='od') showCareModal(a); else showFeedbackModal(a,deltas);
+  saveSave();
+}
+
+function floatDeltas(deltas){
+  const stage=$('#stage');
+  deltas.forEach((d,i)=>{
+    const el=document.createElement('div');
+    el.className='float-d';
+    el.style.color=d.v>=0?'var(--neon-green)':'var(--hp)';
+    el.textContent=`${d.k} ${d.v>=0?'+':''}${d.v}`;
+    el.style.left=(40+i*70)+'px';
+    el.style.top='200px';
+    stage.appendChild(el);
+    setTimeout(()=>el.remove(),1100);
+  });
+}
+
+/* ============ FEEDBACK MODAL (normal) ============ */
+function showFeedbackModal(a,deltas){
+  const mask=$('#modalMask'),modal=$('#modal');
+  const isOd=(a.cat==='od');
+  modal.classList.remove('care');
+  $('#modalTitle').textContent=isOd?'过度服药 · 效果结算':'ACTION LOGGED';
+  const dl=deltas.map(d=>`<div class="md ${d.v>=0?'pos':'neg'}"><span class="mk">${d.k}</span><span>${d.v>=0?'+':''}${d.v}</span></div>`).join('');
+  const statusLine=isOd
+    ? `<div class="modal-status">药物效果：${odEffectText(a)}</div>`
+    : `<div class="modal-status">获得状态：<b>${dangerlessStatus(a)}</b></div>`;
+  $('#modalBody').innerHTML=`
+    <div class="modal-kicker">${isOd?'▣ 药物效果已写入战斗日志':'▣ 动作已写入战斗日志'}</div>
+    <div class="modal-action">你${a.name}</div>
+    <div class="modal-deltas">${dl}</div>
+    ${statusLine}
+    <div class="modal-btns">
+      <button class="btn btn--primary" id="mAgain">继续记录</button>
+      <button class="btn btn--ghost" id="mHome">回到首页</button>
+    </div>`;
+  mask.classList.add('show');
+  if(!isOd)spawnSparks();
+  $('#mAgain').onclick=()=>{mask.classList.remove('show');const pos=$('#stage').scrollTop;go('record');$('#stage').scrollTop=pos;};
+  $('#mHome').onclick=()=>{mask.classList.remove('show');go('home');};
+}
+function odEffectText(a){
+  const up=Object.entries(a.d).filter(([k,v])=>v>0).map(([k])=>k);
+  const down=Object.entries(a.d).filter(([k,v])=>v<0).map(([k])=>k);
+  const parts=[];
+  if(up.length)parts.push(`${up.join('、')} 短暂上升`);
+  if(down.length)parts.push(`${down.join('、')} 被压制`);
+  return parts.length?`中枢抑制生效——${parts.join('，')}。效果是短暂的。`:'属性已更新。';
+}
+function dangerlessStatus(a){
+  if(a.name.includes('魔爪')||a.name==='喝咖啡')return '短暂过载';
+  if(a.tags.includes('回血'))return '稳定运行中';
+  if(a.tags.includes('过载'))return '系统过载';
+  if(a.tags.includes('释放'))return '压力释放';
+  if(a.tags.includes('崩坏'))return '低电量模式';
+  if(a.tags.includes('净化'))return '已净化';
+  if(a.tags.includes('赚钱'))return '余额变动';
+  if(a.tags.includes('社交'))return '连接正常';
+  if(a.tags.includes('自律'))return '自控力上升';
+  return '状态更新';
+}
+function spawnSparks(){
+  const mask=$('#modalMask');
+  const icons=['✨','⭐','＋','♥'];
+  for(let i=0;i<8;i++){
+    const s=document.createElement('div');
+    s.className='spark';
+    s.textContent=icons[i%icons.length];
+    s.style.left=(20+Math.random()*60)+'%';
+    s.style.top=(30+Math.random()*30)+'%';
+    s.style.color=['#39ff14','#ffd23f','#00f0ff','#ff2e97'][i%4];
+    mask.appendChild(s);
+    setTimeout(()=>s.remove(),1000);
+  }
+}
+
+/* ============ CARE MODAL (danger, low stimulation) ============ */
+function showCareModal(a){
+  const mask=$('#modalMask'),modal=$('#modal');
+  modal.classList.add('care');
+  $('#modalTitle').textContent='系统检测到危险状态';
+  const dl=Object.entries(a.d).map(([k,v])=>`<div class="md ${v>=0?'pos':'neg'}"><span class="mk">${k}</span><span>${v>=0?'+':''}${v}</span></div>`).join('');
+  $('#modalBody').innerHTML=`
+    <div class="care-copy">你似乎正在经历一个很难的时刻。<br>这不是失败，也不是成就。</div>
+    <div class="modal-deltas">${dl}</div>
+    <div class="care-note">你可以先停下来，喝一点水，远离危险物品，联系一个可信任的人。</div>
+    <div class="modal-btns">
+      <button class="btn" id="cRecord" style="background:linear-gradient(180deg,#5b8cff,#33509e);color:#fff;text-shadow:1px 1px 0 #000">记录下来</button>
+      <button class="btn btn--ghost" id="cCalm">我需要冷静一下</button>
+      <button class="btn btn--ghost" id="cHelp">查看求助方式</button>
+    </div>
+    <div class="resources" id="resources">
+      <div class="res-item"><b>全国 24 小时心理援助热线</b><br>400-161-9995（希望 24 热线）</div>
+      <div class="res-item"><b>北京心理危机研究与干预中心</b><br>010-82951332</div>
+      <div class="res-item">你不需要马上好起来。<br>先呼吸，再决定下一步。</div>
+    </div>`;
+  mask.classList.add('show');
+  $('#cRecord').onclick=()=>{mask.classList.remove('show');go('home');};
+  $('#cCalm').onclick=()=>{mask.classList.remove('show');go('home');};
+  $('#cHelp').onclick=()=>{$('#resources').classList.toggle('show');};
+}
+
+/* ============ TIMELINE ============ */
+function renderTimeline(){
+  const list=$('#logList');
+  if(!todayLog.length){
+    list.innerHTML=`<div class="log-empty">今日暂无记录。<br>点「记录动作」，给你的角色写第一行战斗日志。</div>`;
+  }else{
+    list.innerHTML='<div class="log">'+todayLog.map(e=>{
+      const ds=e.deltas.map(d=>`<span class="log-d ${d.v>=0?'pos':'neg'}">${d.k}${d.v>=0?'+':''}${d.v}</span>`).join(' ');
+      return `<div class="log-line"><span class="log-time">${e.time}</span><span class="log-name">${e.name}</span>${ds}</div>`;
+    }).join('')+'</div>';
+  }
+  // summary
+  const keys=DETAIL_STATS;
+  let maxK=keys[0],minK=keys[0];
+  keys.forEach(k=>{if(stats[k]>stats[maxK])maxK=k;if(stats[k]<stats[minK])minK=k;});
+  const word=(maxK==='HYPE')?'高咖啡因':(maxK==='CHAOS')?'混乱':(maxK==='SAN')?'清醒':(maxK==='CLEAN')?'干净':'稳定';
+  const weak=(minK==='HP')?'血量':(minK==='SAN')?'精神值':(minK==='CONTROL')?'自控力':(minK==='CLEAN')?'洁净度':minK;
+  const advice=buildAdvice();
+  $('#summary').innerHTML=`
+    <h3>▶ 今日状态总结</h3>
+    <div class="srow">今日状态：<b>${word}型生物</b></div>
+    <div class="srow">最强属性：<b>${STAT_META[maxK].label}</b> (${stats[maxK]})</div>
+    <div class="srow">最弱属性：<b>${STAT_META[minK].label}</b> (${stats[minK]})</div>
+    <div class="advice">系统建议：${advice}</div>`;
+}
+function buildAdvice(){
+  const a=[];
+  if(stats.HP<40)a.push('进食、喝水、休息');
+  if(stats.SAN<40)a.push('散步、洗澡、远离手机、睡觉');
+  if(stats.CHAOS>50)a.push('整理桌面、写下待办、减少刺激');
+  if(stats.CLEAN<40)a.push('洗澡、换衣服、收拾房间');
+  if(stats.SOCIAL<35)a.push('减少社交、进入勿扰模式');
+  if(!a.length)a.push('保持现状，按任意键继续活着。');
+  return a.join('；')+'。';
+}
+
+/* ============ STATUS DETAIL ============ */
+function renderStatus(){
+  const tags=[];
+  if(stats.HP<30)tags.push(['低电量','warn']);
+  if(stats.CHAOS>55)tags.push(['过载','warn']);
+  if(stats.HUNGER>60)tags.push(['饥饿','warn']);
+  if(stats.SOCIAL<35)tags.push(['社交耗尽','warn']);
+  if(stats.HYPE>65)tags.push(['清醒异常','warn']);
+  if(stats.SAN<35)tags.push(['情绪暴雨','warn']);
+  if(!tags.length)tags.push(['稳定运行中','ok']);
+  $('#statusTags').innerHTML=tags.map(t=>`<span class="stag ${t[1]}">${t[0]}</span>`).join('');
+
+  const mm=computeMood();
+  let desc='';
+  if(stats.HP<30&&stats.HYPE>55)desc='你的角色目前处于「低血量高兴奋」的危险组合。表现为：想做很多事，但身体快没电了。';
+  else if(stats.CHAOS>55)desc='系统检测到混乱值偏高。表现为：注意力碎成像素，计划正在后台崩塌。';
+  else if(stats.SAN<35)desc='精神值偏低。表现为：小事变大事，屏幕变得刺眼。建议立刻降级今日难度。';
+  else if(stats.HYPE>65)desc='兴奋度偏高。表现为：电量满格但方向不明，注意别把能量烧在无意义的事上。';
+  else desc='系统运行稳定。你今天像一个勉强正常的像素角色——这已经很不容易了。';
+  $('#statusDesc').textContent=desc;
+
+  const sug=[];
+  if(stats.HP<40)sug.push(['HP 低','吃饭、喝水、休息']);
+  if(stats.SAN<40)sug.push(['SAN 低','散步、洗澡、远离手机、睡觉']);
+  if(stats.CHAOS>50)sug.push(['CHAOS 高','整理桌面、写下待办、减少刺激']);
+  if(stats.CLEAN<40)sug.push(['CLEAN 低','洗澡、换衣服、收拾房间']);
+  if(stats.SOCIAL<35)sug.push(['SOCIAL 低','减少社交、进入勿扰模式']);
+  if(!sug.length)sug.push(['状态良好','保持节律，按任意键继续存活']);
+  $('#suggestList').innerHTML=sug.map(s=>`<div class="sug-item"><b>${s[0]}：</b>${s[1]}</div>`).join('');
+}
+
+/* ============ NAVIGATION ============ */
+function go(page){
+  $$('.page').forEach(p=>p.classList.toggle('active',p.dataset.page===page));
+  $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.go===page));
+  $('#stage').scrollTop=0;
+  if(page==='home'){updateDayLabels();renderHomeBars();applyMood();renderQuip();}
+  if(page==='timeline')renderTimeline();
+  if(page==='status'){renderDetailBars();renderStatus();}
+  if(page==='record')renderCards();
+}
+$$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+$('#searchInput').addEventListener('input',e=>{searchTerm=e.target.value.trim();renderCards();});
+
+/* ============ CLOCK ============ */
+function tickClock(){const d=new Date();$('#clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+setInterval(tickClock,30000);tickClock();
+
+/* ============ BACKUP (numeric code, local-only) ============ */
+/* 数据只存本机 localStorage。导出 = 存档对象 → UTF-8 → base64 → 纯数字(大整数)；
+   导入 = 数字 → base64 → UTF-8 → 存档对象。全程不经过任何服务器。
+   说明：这是"本地混淆 + 数字兑换"，不是高强度加密；它的目的是让你能用一串数字
+   随身携带自己的存档，而不是把数据交给任何云端。 */
+const B64_ALPHA='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+function bytesToB64(bytes){
+  let bin='';const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk){bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk));}
+  return btoa(bin);
+}
+function b64ToBytes(b64){
+  const bin=atob(b64);const bytes=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  return bytes;
+}
+function b64ToDecimal(b64){
+  let n=0n;
+  for(const ch of b64){const idx=B64_ALPHA.indexOf(ch);if(idx<0)return null;n=n*65n+BigInt(idx);}
+  return n;
+}
+function decimalToB64(dec){
+  let n=typeof dec==='bigint'?dec:BigInt(dec);
+  if(n===0n)return B64_ALPHA[0];
+  let s='';
+  while(n>0n){const r=n%65n;s=B64_ALPHA[Number(r)]+s;n=n/65n;}
+  return s;
+}
+function encryptSave(s){
+  const json=JSON.stringify(s);
+  const utf8=new TextEncoder().encode(json);
+  const b64=bytesToB64(utf8);
+  const dec=b64ToDecimal(b64);
+  const chk=String(dec%10000n).padStart(4,'0');
+  return '1'+chk+dec.toString();
+}
+function decryptSave(code){
+  code=(code||'').replace(/\s+/g,'').replace(/[^0-9]/g,'');
+  if(code.length<6||code[0]!=='1')throw new Error('数字码格式不对');
+  const chk=code.slice(1,5);const body=code.slice(5);
+  if(!body)throw new Error('数字码内容为空');
+  const dec=BigInt(body);
+  if(String(dec%10000n).padStart(4,'0')!==chk)throw new Error('校验失败，可能抄错几位');
+  const b64=decimalToB64(dec);
+  const bytes=b64ToBytes(b64);
+  const json=new TextDecoder().decode(bytes);
+  const obj=JSON.parse(json);
+  if(!obj||!obj.startDate||!obj.days)throw new Error('不是有效的存档');
+  return obj;
+}
+function openBackup(){
+  const code=encryptSave(save);
+  $('#backupCode').value=code;
+  $('#backupMsg').textContent='已生成你的数字备份码。复制保存好——它等于你这台设备上的全部存档（含昵称），且不经过任何服务器。';
+  $('#backupMsg').className='backup-msg info';
+  $('#backupMask').classList.add('show');
+}
+function renderAll(){updateDayLabels();renderHomeBars();renderDetailBars();applyMood();renderQuip();renderChips();renderCards();renderNick();}
+$('#openBackup').onclick=openBackup;
+$('#backupCopy').onclick=()=>{
+  const t=$('#backupCode');t.focus();t.select();t.setSelectionRange(0,999999);
+  (navigator.clipboard?navigator.clipboard.writeText(t.value):Promise.reject())
+    .catch(()=>{try{document.execCommand('copy');}catch(e){}});
+  $('#backupMsg').textContent='已复制到剪贴板。';$('#backupMsg').className='backup-msg ok';
+};
+$('#backupClear').onclick=()=>{
+  if(!confirm('确定清除本机存档？所有本地数据将被删除，除非你手上有数字码，否则无法找回。'))return;
+  localStorage.removeItem(SAVE_KEY);
+  $('#backupMsg').textContent='已清除本机存档。刷新页面将以全新存档开始；如有数字码可重新导入恢复。';$('#backupMsg').className='backup-msg info';
+};
+$('#backupMask').addEventListener('click',e=>{if(e.target===$('#backupMask'))$('#backupMask').classList.remove('show');});
+$('#backupClose').onclick=()=>$('#backupMask').classList.remove('show');
+
+/* ============ MODAL CLOSE (red × in title bar) ============ */
+/* 标题栏右侧的红色 × 用于关闭当前弹窗（反馈/关怀/备份通用）。 */
+$$('.win-title .dot').forEach(d=>{
+  const close=()=>{const m=d.closest('.modal-mask');if(m)m.classList.remove('show');};
+  d.onclick=close;
+  d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();close();}});
+});
+
+/* ============ CUSTOM ACTION MODAL HANDLERS ============ */
+$('#custSave').onclick=saveCust;
+$('#custCancel').onclick=()=>$('#custMask').classList.remove('show');
+// Enter in the name field saves; Esc cancels
+$('#custName').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();saveCust();}});
+$('#custMask').addEventListener('keydown',e=>{if(e.key==='Escape')$('#custMask').classList.remove('show');});
+
+/* ============ NICKNAME ============ */
+function renderNick(){
+  $('#charName').textContent='UNIT-07 · '+(save.nick||'你');
+}
+function confirmNick(){
+  const v=$('#nickInput').value.trim();
+  save.nick=v||'无名氏';
+  saveSave();renderNick();
+  $('#nickMask').classList.remove('show');
+  if(isNewDay) showNewDay();
+}
+$('#nickImportBtn').onclick=()=>{
+  const raw=$('#nickCode').value;
+  try{
+    const obj=decryptSave(raw);
+    save=obj;ensureToday();stats=curDay().stats;todayLog=curDay().log;saveSave();renderAll();
+    $('#nickCode').value='';$('#nickMsg').textContent='';
+    $('#nickMask').classList.remove('show');
+  }catch(e){
+    $('#nickMsg').textContent='导入失败：'+e.message+'. 请确认数字码完整、没有缺位或多余字符。';
+    $('#nickMsg').className='backup-msg err';
+  }
+};
+
+/* ============ INIT ============ */
+loadSave();ensureToday();
+stats=curDay().stats; todayLog=curDay().log;
+renderChips();renderCards();updateDayLabels();renderHomeBars();renderDetailBars();applyMood();renderQuip();renderNick();
+$('#bootStart').onclick=()=>$('#boot').classList.remove('show');
+$('#nickStart').onclick=confirmNick;
+$('#nickInput').addEventListener('keydown',e=>{if(e.key==='Enter')confirmNick();});
+if(!save.nick){
+  $('#nickMask').classList.add('show');
+  setTimeout(()=>$('#nickInput').focus(),50);
+}else if(isNewDay){
+  showNewDay();
+}
+</script>
+</body>
+</html>
